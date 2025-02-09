@@ -1,6 +1,12 @@
 # whisperx_mp4_text_extract
 
-A streamlined tool to extract text from audio/video files using WhisperX.
+A streamlined tool to extract text from audio/video files using WhisperX 
+@article{bain2022whisperx,
+  title={WhisperX: Time-Accurate Speech Transcription of Long-Form Audio},
+  author={Bain, Max and Huh, Jaesung and Han, Tengda and Zisserman, Andrew},
+  journal={INTERSPEECH 2023},
+  year={2023}
+}
 
 ## Features
 
