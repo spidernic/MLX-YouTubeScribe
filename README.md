@@ -1,110 +1,141 @@
-# whisperx_mp4_text_extract
+# MLX-YouTubeScribe
 
-- A streamlined tool to extract text from audio/video files using WhisperX
-  
-- Basef on the WhisperX Article / paper:
-- [ ] WhisperX: Time-Accurate Speech Transcription of Long-Form Audio
-- [ ] Author= Bain, Max and Huh, Jaesung and Han, Tengda and Zisserman, Andrew
-- [ ] journal=INTERSPEECH 2023
-- [ ] year=2023
-}
+> **Note**: This application uses local AI models for transcription. The models will be automatically downloaded the first time you run the application. Please ensure you have a stable internet connection for the initial setup.
+
+A powerful application that generates transcripts from YouTube videos and playlists using local Whisper AI models for speech recognition. The application processes audio from YouTube videos, analyzes the audio characteristics, and generates accurate text transcripts completely offline after the initial model download.
 
 ## Features
 
-- Fast audio/video to text transcription using WhisperX
-- GPU acceleration support
-- Simple command-line interface
-- Outputs plain text files
-- Supports batch processing
-- Configurable model size and computation settings
+- **Video & Playlist Support**: Process individual YouTube videos or entire playlists
+- **High-Quality Transcription**: Utilizes OpenAI's Whisper model for accurate speech-to-text
+- **Audio Analysis**: Provides detailed audio metrics including duration, sample rate, and amplitude
+- **Apple Silicon Optimized**: Leverages MLX and Metal Performance Shaders (MPS) for accelerated performance on M1/M2 Macs
+- **Batch Processing**: Automatically processes all videos in a playlist
+- **User-Friendly Interface**: Simple web interface built with Streamlit
+- **Output Formats**: Saves results in both JSON and human-readable text formats
 
-## Requirements
+## Prerequisites
 
 - Python 3.8 or higher
-- NVIDIA GPU with CUDA support (optional, but recommended for faster processing)
-- CUDA Toolkit (if using GPU)
+- macOS with Apple Silicon (M1/M2) for optimal performance with MLX and PyTorch MPS
+- FFmpeg (required by yt-dlp)
 
 ## Installation
 
-1. Clone this repository:
-```bash
-git clone [your-repo-url]
-cd whisperx_extract
-```
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd Transcriptor
+   ```
 
-2. Create and activate a conda environment (recommended):
-```bash
-# Create conda environment
-conda create -n whisperx_env python=3.8
-conda activate whisperx_env
+2. Create and activate a conda environment:
+   ```bash
+   # Create a new conda environment with Python 3.8 or higher
+   conda create -n transcriptor python=3.9
+   conda activate transcriptor
+   ```
 
-# Install PyTorch with CUDA support (adjust cuda version as needed)
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-conda install -c conda-forge ffmpeg-python
-```
+3. Install the required packages:
+   ```bash
+   # Install PyTorch with Metal Performance Shaders (MPS) support for Apple Silicon
+   conda install pytorch::pytorch torchvision torchaudio -c pytorch
+   
+   # Install remaining dependencies
+   conda install -c conda-forge streamlit yt-dlp numpy scipy
+   
+   # Install MLX for Apple Silicon acceleration
+   pip install mlx
+   
+   # Install transformers with MLX support
+   pip install transformers[torch]
+   ```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+4. Install FFmpeg (if not already installed):
+   - On macOS: `brew install ffmpeg`
+   - On Ubuntu/Debian: `sudo apt install ffmpeg`
+   - On Windows: Download from [FFmpeg's website](https://ffmpeg.org/download.html)
 
 ## Usage
 
-Basic usage:
+### GUI Version
+1. Run the Streamlit GUI application:
+   ```bash
+   streamlit run src/gui_generate_transcripts.py
+   ```
+
+2. Open your web browser and navigate to the URL shown in the terminal (usually `http://localhost:8501`)
+
+3. Enter a YouTube video URL or playlist URL in the input field
+
+4. Click "Generate Transcript" to start processing
+
+5. View the transcript directly in the browser or check the `output` directory for saved files
+
+### CLI Version
+
+For command-line usage:
 ```bash
-python extract_text.py -i "path/to/your/video.mp4"
+python src/cli_generate_transcripts.py [youtube_url]
 ```
 
-This will create a text file with the same name as your input file (e.g., "video.txt").
+Options:
+- `youtube_url`: URL of the YouTube video or playlist to process
+- The script will automatically process the video/playlist and save results to the `output` directory
 
-### Advanced Options
+## Output
 
-```bash
-python extract_text.py -i "input.mp4" \
-                      -o "output.txt" \
-                      -m "large-v3-turbo" \
-                      -d "cuda" \
-                      -b 4 \
-                      -c "float16"
+The application creates an `output` directory with the following structure:
+
+```
+output/
+├── [video_title].json     # Complete analysis in JSON format
+├── [video_title].txt      # Human-readable transcript
+└── audio/
+    └── [video_title].wav  # Downloaded audio file
 ```
 
-Parameters:
-- `-i, --input`: Input audio/video file (required)
-- `-o, --output`: Output text file (optional, defaults to input path with .txt extension)
-- `-m, --model`: Model name (default: large-v3-turbo)
-  - Options: tiny, base, small, medium, large-v3, large-v3-turbo
-- `-d, --device`: Device to use (default: cuda if available, else cpu)
-- `-b, --batch_size`: Batch size for processing (default: 4)
-- `-c, --compute_type`: Computation precision (default: float16)
-  - Options: float16, float32
+For playlists, a subdirectory with the playlist name is created containing all video transcripts.
 
-## Using as a Python Module
+## Models
 
-You can also use the tool as a Python module in your own code:
-
-```python
-from extract_text import extract_text
-
-# Basic usage
-text = extract_text("video.mp4")
-
-# Advanced usage
-text = extract_text(
-    input_path="video.mp4",
-    output_path="custom_output.txt",
-    model_name="large-v3-turbo",
-    device="cuda",
-    batch_size=4,
-    compute_type="float16"
-)
-```
+The application uses the following models:
+- `openai/whisper-large-v3-turbo` for high-quality transcription
+- `openai/whisper-tiny.en` as a fallback (currently not in use)
 
 ## Performance Notes
 
-- GPU acceleration provides significant speed improvements
-- Larger batch sizes can improve processing speed but require more memory
-- Model size affects both accuracy and processing speed:
-  - large-v3-turbo: Best accuracy, slower
-  - medium: Good balance of accuracy and speed
-  - small: Faster but less accurate
-  - base/tiny: Fastest but least accurate
+- The application is optimized for Apple Silicon (M1/M2) using MLX for accelerated inference
+- Processing time depends on video length and system performance
+- For long videos, the audio is automatically split into 30-second chunks for processing
+
+## Troubleshooting
+
+- **FFmpeg not found**: Ensure FFmpeg is installed and added to your system PATH
+- **Model download issues**: Check your internet connection and try again
+- **Memory errors**: Try processing shorter videos or close other memory-intensive applications
+
+## License
+
+This project is open source and available under the [Apache License 2.0](LICENSE).
+
+```
+Copyright 2025 spidernic
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+## Acknowledgments
+
+- [OpenAI Whisper](https://github.com/openai/whisper) for the speech recognition model
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) for YouTube video downloading
+- [Streamlit](https://streamlit.io/) for the web interface

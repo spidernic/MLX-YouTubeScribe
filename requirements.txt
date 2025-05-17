@@ -1,6 +1,14 @@
---find-links https://download.pytorch.org/whl/torch_stable.html
-numpy==1.24.3
-torch==2.2.0+cu121
-torchvision==0.17.0+cu121
-torchaudio==2.2.0+cu121
-git+https://github.com/matheusbach/whisperx.git
+python-dotenv
+langchain
+youtube_transcript_api
+mlx
+mlx-audio
+yt-dlp
+numpy
+scipy
+transformers
+huggingface-hub
+pyyaml
+mlx-lm
+chromadb
+torch
